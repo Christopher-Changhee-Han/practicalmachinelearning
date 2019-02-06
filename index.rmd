@@ -1,0 +1,100 @@
+---
+title: "Prediction Assignment (Coursera Data Science Specialization)"
+author: "Christopher Han"
+date: "February 5, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Summary
+
+The goal of this project is to predict the different ways a barbell lift is performed. The data is provided by [Groupware](http://web.archive.org/web/20161224072740/http://groupware.les.inf.puc-rio.br/static/WLE/WearableComputing_weight_lifting_exercises_biceps_curl_variations.csv) in which 6 participants performed barbell lifts correctly and incorrectly in 5 different ways. They each wore belt, arm, forearm, and dumbbell sensors that recorded the direction in x,y,z axes as well as other information such as acceleration. According to the paper 'Qualitative Activity Recognition of Weight Lifting Exercises', the 5 different classes are as follows: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+We fit a random forest model which resulted in an OOB estimate of error rate of 0.44%. The optimal number of variables to be tried at each split was determined to be 27 and we fit 500 trees in the random forest. As a result, the accuracy was 99.29% for the training data and we were able to correctly identify 20 out of 20 observations in the testing dataset.
+
+
+## Methodology
+```{r download, cache = TRUE, message = FALSE}
+trainingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testingURL <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+download.file(trainingURL, "training.csv")
+download.file(testingURL, "testing.csv")
+
+training <- read.csv("training.csv")
+testing <- read.csv("testing.csv")
+
+summary(training$classe)
+```
+
+When we observe the data, we notice that each class (A,B,C,D,E) are all quite evenly distributed with enough observations for each of them. However, there are many summary statistics such as kurtosis, sknewness, and amplitude that results in many rows having missing values. We determined these variables to be unnecessary and decided to remove them to focus only on the raw measurements. Moreover, we removed the identifier (X) and the variables related to time because they may overfit the model.
+
+```{r}
+summaryStatsID <- grep("^kurtosis|^skewness|^max|^min|^amplitude|^var|^avg|^stddev", names(training))
+smalltraining <- training[,-c(summaryStatsID, 1:7)]
+smalltesting <- testing[,-c(summaryStatsID, 1:7)]
+dim(smalltraining)
+dim(smalltesting)
+```
+
+We end up with 52 predictors and 1 outcome variable.
+
+## Single Classification Tree
+
+```{r library, message = FALSE, warning = FALSE}
+#necessary packages loaded in
+library(caret)
+library(parallel)
+library(doParallel)
+library(mlbench)
+library(tree)
+library(rattle)
+```
+
+We start off the exercise by fitting a rpart tree using the 'train' function in caret package to get the bootstrapped results. The final model has a training accuracy of only 50.58%. Although this singular decision tree is highly interpretable, it does not perform too well in accurately predicting the activity class.
+
+```{r, cache = TRUE}
+
+simplefit <- train(classe~., method = "rpart", data = smalltraining)
+simplefit
+fancyRpartPlot(simplefit$finalModel, main = "Simple Tree to Predict Activity Class")
+```
+
+
+## PCA and Random Forest
+
+In this step, we used parallel processing in order to maximize the efficiency with which the random forest is fitted. We initially tried to pre-process the data with principal components in order to reduce the size. However, it resulted in a less accurate model with training accuracy around 97% rather than 99% (which is the goal). Instead of using bootstrap method, we used 5-fold cross-validation in order to speed up the training process.
+
+```{r fit, cache = TRUE, message = FALSE}
+cluster <- makeCluster(detectCores() - 1)
+registerDoParallel(cluster)
+
+fitControl <- trainControl(method = "cv",
+                           number = 5,
+                           allowParallel = TRUE)
+set.seed(130)
+fit <- train(smalltraining[,-53], smalltraining[,53], method = "rf", data = smalltraining, trainControl= fitControl)
+
+stopCluster(cluster)
+registerDoSEQ()
+```
+
+## Results
+
+As shown in the code below, the optimal number of variables tried at each split was determined to be 27 and the out-of-bag estimate of error rate was 0.44%. It is worth mentioning that mtry = 2 produced very similar accuracy rate for the training data and it may be computationally more sensible to use mtry = 2 rather than mtry = 27 as the training accuracy differs by 0.5% only. When predicted on the testing data, we were able to accurately predict the activity class of all 20 observations.
+
+```{r results}
+fit
+
+pred <- predict(fit, smalltesting)
+pred
+```
+
+## Conclusion
+
+In this project, we explored the difference in performance between fitting a single classification tree and a random forest. Random forest performs at a 99% training accuracy while the single classification tree performs at around 50% training accuracy. Nevertheless, one drawback of the random forest is that it is computationally expensive and not as interpretable. Although parallel processing speeds up the model fitting by using multi-threaded cores, the speed is still much slower than fitting a simpler, more interpretable model such as the single classification tree. There is a trade-off here for sure, and the optimal model will depend on one's specific goals and needs.
+
+
