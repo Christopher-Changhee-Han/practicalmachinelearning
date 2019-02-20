@@ -1,7 +1,7 @@
 ---
 title: "Machine Learning: Random Forest"
 author: "Christopher Han"
-date: "February 5, 2019"
+date: "February 20, 2019"
 output: html_document
 ---
 
@@ -64,7 +64,7 @@ fancyRpartPlot(simplefit$finalModel, main = "Simple Tree to Predict Activity Cla
 ```
 
 
-## PCA and Random Forest
+## Random Forest
 
 In this step, we used parallel processing in order to maximize the efficiency with which the random forest is fitted. We initially tried to pre-process the data with principal components in order to reduce the size. However, it resulted in a less accurate model with training accuracy around 97% rather than 99% (which is the goal). Instead of using bootstrap method, we used 5-fold cross-validation in order to speed up the training process.
 
