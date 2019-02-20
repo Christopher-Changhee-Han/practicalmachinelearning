@@ -1,5 +1,5 @@
 ---
-title: "Prediction Assignment (Coursera Data Science Specialization)"
+title: "Machine Learning: Random Forest"
 author: "Christopher Han"
 date: "February 5, 2019"
 output: html_document
