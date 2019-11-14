@@ -1,8 +1,33 @@
-# Machine Learning: Random Forest
-Christopher Han  
-February 20, 2019
+# Machine Learning Project
+The goal of this project is to predict the different ways a barbell lift is performed. The data is provided by [Groupware](http://web.archive.org/web/20161224072740/http://groupware.les.inf.puc-rio.br/static/WLE/WearableComputing_weight_lifting_exercises_biceps_curl_variations.csv) in which 6 participants performed barbell lifts correctly and incorrectly in 5 different ways. They each wore belt, arm, forearm, and dumbbell sensors that recorded the direction in x,y,z axes as well as other information such as acceleration. 
+#### -- Project Status: Completed
 
-## Summary
-The goal of this project is to predict the different ways a barbell lift is performed. The data is provided by Groupware in which 6 participants performed barbell lifts correctly and incorrectly in 5 different ways. They each wore belt, arm, forearm, and dumbbell sensors that recorded the direction in x,y,z axes as well as other information such as acceleration. According to the paper ‘Qualitative Activity Recognition of Weight Lifting Exercises’, the 5 different classes are as follows: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+### Methods Used
+* Data Partitioning
+* Classification Tree and Random Forest
+* Visualization of Trees
 
-We fit a random forest model which resulted in an OOB estimate of error rate of 0.44%. The optimal number of variables to be tried at each split was determined to be 27 and we fit 500 trees in the random forest. As a result, the accuracy was 99.29% for the training data and we were able to correctly identify 20 out of 20 observations in the testing dataset.
+### Technologies Used
+* R 
+* caret
+* parallel
+* doParallel
+* mlbench
+* tree
+* rattle
+
+## Getting Started
+
+1. Clone this repo (for help see this [tutorial](https://help.github.com/articles/cloning-a-repository/)).
+2. Download the dataset from [here](http://web.archive.org/web/20161224072740/http://groupware.les.inf.puc-rio.br/static/WLE/WearableComputing_weight_lifting_exercises_biceps_curl_variations.csv)
+3. Run main.R
+
+## Findings
+
+Random forest performs at a 99% training accuracy while the single classification tree performs at around 50% training accuracy. Nevertheless, one drawback of the random forest is that it is computationally expensive and not as interpretable. Although parallel processing speeds up the model fitting by using multi-threaded cores, the speed is still much slower than fitting a simpler, more interpretable model such as the single classification tree. There is a trade-off here for sure, and the optimal model will depend on one's specific goals and needs.
+
+## Featured Analysis
+* [RMarkdown Report](https://christopher-changhee-han.github.io/practicalmachinelearning/)
+
+## Contact
+* Please contact me at christopherhan@stat.tamu.edu for any questions or concerns!
